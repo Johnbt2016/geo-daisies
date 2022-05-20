@@ -6,6 +6,7 @@ import streamlit as st
 import pandas as pd
 from matplotlib.backends.backend_agg import RendererAgg
 _lock = RendererAgg.lock
+from summary import *
 
 of_dict = {
     'A'  : {'Name' : 'Organo Facies A - Oil' , 'A' : float(2.13e13) , 'E' : float(206.4 * 1e3 * 0.000239006) , 's' : float(8.2 * 1000 * 0.000239006)},
@@ -27,7 +28,8 @@ def computeEzRo(vitrinitetble ,T, dt):
 
 
 def primarycracking(kerogen, alpha):
-
+   
+    labels = ["Temperature", "HI", "TR", "EasyRo", "TMax", "Thermal Stress", "Age"]
     np.set_printoptions(precision=2, suppress = True)
     temptable = np.linspace(30.,180.,16)
     vitrinitetble = np.array([[34.0 , 3.0],[36.0 , 3.0],[38.0 , 4.0],[40.0 , 4.0],[42.0 , 5.0],
@@ -55,7 +57,6 @@ def primarycracking(kerogen, alpha):
     ymin = 0
     ymax = max(kerogen.xi) + 50
     plt.axis([xmin, xmax, ymin, ymax])
-    # ax.grid(True, zorder=5)
 
     while T < maxT:
         for e in range(len(kerogen.Ea)):
@@ -72,13 +73,10 @@ def primarycracking(kerogen, alpha):
         ezRo =  math.exp(-1.6 + 3.7 * Tr) / 100
         T2 = T - 15. * math.log(alpha / 2. , 10)
 
-
             # Initial heating : 5min @ 300C
         TR =  (1 - HI / kerogen.HI0)
         if TR < 1:
-            RE_table = []
-            for e in range(len(kerogen.Ea)):
-                RE_table.append(kerogen.xi[e])
+            RE_table = [kerogen.xi[e] for e in range(len(kerogen.Ea))]
 
             for e in range(len(kerogen.Ea)):
                 RE_table[e] *= Arrhenius(kerogen.A  , kerogen.Ea[e] , 300. , 300.)
@@ -98,22 +96,20 @@ def primarycracking(kerogen, alpha):
             TMax2 = 0
             TMax3 = 0
             REYield = np.asarray(REYield)
-            exit = False
 
             for k in range(1 , REYield.shape[0] - 1):
                 maxY = REYield[k - 1][1] - REYield[k][1]
-                if exit == False:
-                    if maxY > (REYield[k][1] - REYield[k+1][1]):
-                        exit = True
-                        TMax1 = REYield[k - 1][0]
-                        TMax2 = REYield[k + 0][0]
-                        TMax3 = REYield[k + 1][0]
-                        if k > 1 :
-                            dY1 = REYield[k - 2][1] - REYield[k - 1][1]
-                        else:
-                            dY1 = 0
-                        dY2 = REYield[k - 1][1] - REYield[k + 0][1]
-                        dY3 = REYield[k + 0][1] - REYield[k + 1][1]
+                if maxY > (REYield[k][1] - REYield[k+1][1]):
+                    TMax1 = REYield[k - 1][0]
+                    TMax2 = REYield[k + 0][0]
+                    TMax3 = REYield[k + 1][0]
+                    if k > 1 :
+                        dY1 = REYield[k - 2][1] - REYield[k - 1][1]
+                    else:
+                        dY1 = 0
+                    dY2 = REYield[k - 1][1] - REYield[k + 0][1]
+                    dY3 = REYield[k + 0][1] - REYield[k + 1][1]
+                    break
 
             matrix = [[TMax1 * TMax1 , TMax1 , 1],
                       [TMax2 * TMax2 , TMax2 , 1],
@@ -130,14 +126,7 @@ def primarycracking(kerogen, alpha):
                 T += alpha * dt
                 continue
 
-        if HI > 0.001 :
-            # print "Age" , '% 0.1f' % float(age) , "Temperature:" , T , "HI:" , '% 0.2f' % float(HI) , "TR" , '% 0.1f' % float(100 * TR) , "%" , "EasyRo:" ,  '% 0.2f' % float(100 * ezRo) , "%Ro Eq." , "TMax:" , '% 0.1f' % float(TMax) , "STS:" , '% 0.1f' % float(T2) , "C"
-            val = [T , HI , TR , ezRo , TMax , T2 , age]
-            label = ["Temperature", "HI", "TR", "EasyRo", "TMax", "Thermal Stress", "Age"]
-            # print(dict(zip(label, val)))
-
         result.append([T , HI , TR , ezRo , TMax , T2 , age])
-        result_dict.update(dict(zip(label, val)))
 
         plt.xlabel('Activation Energy (kcal/mol)')
         plt.ylabel('Partial potential (mgHC/gC)')
@@ -155,7 +144,7 @@ def primarycracking(kerogen, alpha):
         age += dt
     ##### PLOT RESULTS #####
     result = np.asarray(result)
-    result_df = pd.DataFrame(result, columns = label)
+    result_df = pd.DataFrame(result, columns = labels)
 
     ax = plt.subplot(232)
     plt.xlabel('TMax (C)')
@@ -276,18 +265,42 @@ class KerogenPepper:
 
 #     return [{"type": "image", "data": {"alt": "could not compute", "src": "data:image/png;base64, " + encoded_string.decode('ascii')}}]
 
+def compute_cracking(OF, HI, alpha):
+    '''
+    Compute primary cracking for a given kerogen and heating rate
+
+    Parameters:
+    - OF (str) : Organo facies label ['A', 'B', 'C', 'DE', 'F']
+    - HI0 (int) : initial Hydrogen Index (mgHC/gC)
+    - alpha (float ): heating rate(C/Ma)
+
+    Returns:
+    - Pandas Dataframe with the simulated values
+    - Matplotlib figure object
+    '''
+
+    of_select = of_dict[OF]
+    kero  = KerogenPepper(of_select['Name'] ,  of_select['A'] ,  of_select['E'] ,  of_select['s'] , float(HI))
+
+    result_df, fig = primarycracking(kero , float(alpha))
+
+    return result_df, fig
+
+
 def st_ui():
     st.set_page_config(layout = "wide")
+
+    
 
     st.title("Primary Cracking simulation")
     OF = st.sidebar.selectbox('OrganoFacies selection', ('A', 'B', 'C', 'DE', 'F'))
     HI = st.sidebar.slider("Initial Hydrogen Index", 100, 900, 600)
     alpha = st.sidebar.slider("Heating rate", 0.1, 10., 2.)
 
-    of_select = of_dict[OF]
-    kero  = KerogenPepper(of_select['Name'] ,  of_select['A'] ,  of_select['E'] ,  of_select['s'] , float(HI))
+    with st.expander("Summary"):
+        st.markdown(get_summary(OF, HI, alpha))
 
-    result_df, fig = primarycracking(kero , float(alpha))
+    result_df, fig = compute_cracking(OF, HI, alpha)
 
     with _lock:
         st.header("Primary cracking dashboard")
