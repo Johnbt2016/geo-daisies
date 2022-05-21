@@ -53,6 +53,7 @@ def primarycracking(kerogen, alpha):
         title = str(kerogen.name) + ' \n\n Kinetic scheme analysis'
         fig = plt.figure(title, figsize = (14,12))
         fig.suptitle(title, fontsize = 14 , fontweight = 'bold')
+        plt.clf()
         ax = plt.subplot(231)
         xmin = min(kerogen.Ea) - 1
         xmax = max(kerogen.Ea) + 1
