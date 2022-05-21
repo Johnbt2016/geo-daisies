@@ -9,8 +9,8 @@ def get_summary(OF, HI, alpha):
     import pandas as pd
 
     primary_cracking = pyd.Daisi("Primary Cracking")
-    result = primary_cracking.compute_cracking(OF=''' 
-    text += str(OF) + ', HI=' + str(HI) + ', alpha=' + str(alpha) + ''').value
+    result = primary_cracking.compute_cracking(OF="''' 
+    text += str(OF) + '", HI=' + str(HI) + ', alpha=' + str(alpha) + ''').value
     
     df = result[0]
     ```
