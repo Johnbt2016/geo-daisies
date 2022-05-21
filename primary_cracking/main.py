@@ -138,10 +138,10 @@ def primarycracking(kerogen, alpha):
                 # label = str('% 0.2f' % float(100 * ezRo)) + '%Ro eq.'
                 label = 'STS:' + str('% 0.0f' % float(T2)) + 'C'
                 if kerogen.formalism == 'Pepper' :
-                    plt.plot(kerogen.Ea, kerogen.xi, '-' , label = label)
+                    ax.plot(kerogen.Ea, kerogen.xi, '-' , label = label)
                 if kerogen.formalism == 'IFP' :
-                    plt.bar(kerogen.Ea , kerogen.xi , label = label)
-                plt.legend(fontsize = 8)
+                    ax.bar(kerogen.Ea , kerogen.xi , label = label)
+                ax.legend(fontsize = 8)
 
             T += alpha * dt
             age += dt
@@ -150,7 +150,7 @@ def primarycracking(kerogen, alpha):
         result_df = pd.DataFrame(result, columns = labels)
 
         ax = plt.subplot(232)
-        plt.xlabel('TMax (C)')
+        ax.xlabel('TMax (C)')
         plt.ylabel('Hydrogen Index (mgHC/gC)')
         plt.title('HI vs. TMax')
         xmin = 390
@@ -161,7 +161,7 @@ def primarycracking(kerogen, alpha):
         a = result[:,1]
         b = result[:,4]
 
-        plt.plot(b, a, 'o' , b , a)
+        ax.plot(b, a, 'o' , b , a)
         # ax.fill(x, y, zorder=10)
         ax.grid(True, zorder=5)
 
@@ -176,7 +176,7 @@ def primarycracking(kerogen, alpha):
         plt.axis([xmin, xmax, ymin, ymax])
         a = 100 * result[:,3]
         b = result[:,2]
-        plt.plot(a, b, 'o' , a , b)
+        ax.plot(a, b, 'o' , a , b)
         # ax.fill(x, y, zorder=10)
         ax.grid(True, zorder=5)
 
@@ -191,7 +191,7 @@ def primarycracking(kerogen, alpha):
         plt.axis([xmin, xmax, ymin, ymax])
         a = result[:,4]
         b = 100 * result[:,3]
-        plt.plot(b, a, 'o' , b , a)
+        ax.plot(b, a, 'o' , b , a)
         # ax.fill(x, y, zorder=10)
         ax.grid(True, zorder=5)
 
@@ -207,8 +207,8 @@ def primarycracking(kerogen, alpha):
         a = 100 * result[:,3]
         b = result[:,0]
         c = result[:,5]
-        plt.plot(a, b , label = 'Temperature')
-        plt.plot(a, c , label = 'STS')
+        ax.plot(a, b , label = 'Temperature')
+        ax.plot(a, c , label = 'STS')
         # ax.fill(x, y, zorder=10)
         ax.grid(True, zorder=5)
         plt.legend()
@@ -225,8 +225,8 @@ def primarycracking(kerogen, alpha):
         a = result[:,6]
         b = result[:,0]
         c = result[:,5]
-        plt.plot(a, b , label = 'Temperature')
-        plt.plot(a, c , label = 'STS')
+        ax.plot(a, b , label = 'Temperature')
+        ax.plot(a, c , label = 'STS')
         # ax.fill(x, y, zorder=10)
         ax.grid(True, zorder=5)
         plt.legend()
