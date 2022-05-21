@@ -283,8 +283,8 @@ def compute_cracking(OF, HI, alpha):
 
     of_select = of_dict[OF]
     kero  = KerogenPepper(of_select['Name'] ,  of_select['A'] ,  of_select['E'] ,  of_select['s'] , float(HI))
-
-    result_df, fig = primarycracking(kero , float(alpha))
+    with _lock:
+        result_df, fig = primarycracking(kero , float(alpha))
 
     return result_df, fig
 
