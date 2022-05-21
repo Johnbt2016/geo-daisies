@@ -53,7 +53,7 @@ def primarycracking(kerogen, alpha):
         title = str(kerogen.name) + ' \n\n Kinetic scheme analysis'
         fig = plt.figure(title, figsize = (14,12))
         fig.suptitle(title, fontsize = 14 , fontweight = 'bold')
-        plt.clf()
+        
         ax = plt.subplot(231)
         xmin = min(kerogen.Ea) - 1
         xmax = max(kerogen.Ea) + 1
@@ -281,7 +281,7 @@ def compute_cracking(OF, HI, alpha):
     - Pandas Dataframe with the simulated values
     - Matplotlib figure object
     '''
-
+    plt.close()
     of_select = of_dict[OF]
     kero  = KerogenPepper(of_select['Name'] ,  of_select['A'] ,  of_select['E'] ,  of_select['s'] , float(HI))
     with _lock:
