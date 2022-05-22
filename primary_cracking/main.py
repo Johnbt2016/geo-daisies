@@ -150,7 +150,7 @@ def primarycracking(kerogen, alpha):
         result_df = pd.DataFrame(result, columns = labels)
 
         ax = plt.subplot(232)
-        ax.xlabel('TMax (C)')
+        plt.xlabel('TMax (C)')
         plt.ylabel('Hydrogen Index (mgHC/gC)')
         plt.title('HI vs. TMax')
         xmin = 390
